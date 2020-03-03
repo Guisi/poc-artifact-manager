@@ -33,7 +33,7 @@ public class ArtifactApiController {
 
 	@PostMapping(value = "/artifact/{artifactType}", consumes = { "application/json" }, produces = { "application/json" })
 	public ResponseEntity<ArtifactResponse> generateArtifact(@Valid @PathVariable("artifactType") ArtifactTypeEnum artifactType,
-			@Valid @RequestBody(required = true) Map<String, String> parameters) {
+			@Valid @RequestBody(required = true) Map<String, String> parameters) throws Exception {
 
 		ArtifactResponse response = this.artifactService.generateArtifact(artifactType, parameters);
 		return ResponseEntity.ok(response);
