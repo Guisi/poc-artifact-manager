@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.guisi.poc.pocartifactmanager.constants.ArtifactTypeEnum;
 import br.com.guisi.poc.pocartifactmanager.model.ArtifactResponse;
 import br.com.guisi.poc.pocartifactmanager.service.ArtifactService;
 
@@ -32,8 +31,8 @@ public class ArtifactApiController {
 	}
 
 	@PostMapping(value = "/artifact/{artifactType}", consumes = { "application/json" }, produces = { "application/json" })
-	public ResponseEntity<ArtifactResponse> generateArtifact(@Valid @PathVariable("artifactType") ArtifactTypeEnum artifactType,
-			@Valid @RequestBody(required = true) Map<String, String> parameters) throws Exception {
+	public ResponseEntity<ArtifactResponse> generateArtifact(@Valid @PathVariable("artifactType") String artifactType,
+			@Valid @RequestBody(required = true) Map<String, String> parameters) {
 
 		ArtifactResponse response = this.artifactService.generateArtifact(artifactType, parameters);
 		return ResponseEntity.ok(response);

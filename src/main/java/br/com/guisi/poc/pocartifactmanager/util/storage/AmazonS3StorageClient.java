@@ -7,7 +7,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.amazonaws.auth.AWSCredentials;
@@ -25,10 +29,13 @@ public class AmazonS3StorageClient implements StorageClient {
 	private static final String DELIMITER = "/";
 
 	private AmazonS3 s3client;
+	
+	@Autowired
+	private CacheManager cacheManager;
 
 	@Value("${amazon-aws.bucketName}")
 	private String bucketName;
-
+	
 	@Value("${amazon-aws.bucketRootDir}")
 	private String bucketRootDir;
 
@@ -47,22 +54,26 @@ public class AmazonS3StorageClient implements StorageClient {
 		AWSStaticCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
 		this.s3client = AmazonS3ClientBuilder.standard().withCredentials(credentialsProvider).withRegion(Regions.fromName(regionName)).build();
 	}
+	
+	@Override
+	@Cacheable(value = "poc-artifacts/temp")
+	public List<S3ObjectSummary> listFiles() {
+		System.out.println("S3 Listing files");
 
-	private List<S3ObjectSummary> listFiles(String directoryName) {
-		String prefix = this.bucketRootDir + DELIMITER + directoryName;
-		ListObjectsV2Request request = new ListObjectsV2Request().withBucketName(this.bucketName).withPrefix(prefix).withMaxKeys(2);
+		ListObjectsV2Request request = new ListObjectsV2Request().withBucketName(this.bucketName).withPrefix(this.bucketRootDir);
 		return this.s3client.listObjectsV2(request).getObjectSummaries().stream().filter(o -> !o.getKey().endsWith(DELIMITER)).collect(Collectors.toList());
+	}
+	
+	@Scheduled(initialDelay = 10000, fixedRate = 10000)
+	public void clearCache() {
+		System.out.println("Limpando cache");
+		this.cacheManager.getCacheNames().forEach(name -> this.cacheManager.getCache(name).clear());
 	}
 
 	@Override
-	public String generateDownloadURL(String directoryName, Date expiration) {
-		List<S3ObjectSummary> objects = this.listFiles(directoryName);
-		if (!objects.isEmpty()) {
-			URL url = this.s3client.generatePresignedUrl(this.bucketName, objects.get(0).getKey(), expiration);
-			return url.toExternalForm();
-		}
-
-		return null;
+	public String generateDownloadURL(String key, Date expiration) {
+		URL url = this.s3client.generatePresignedUrl(this.bucketName, key, expiration);
+		return url.toExternalForm();
 	}
 
 }

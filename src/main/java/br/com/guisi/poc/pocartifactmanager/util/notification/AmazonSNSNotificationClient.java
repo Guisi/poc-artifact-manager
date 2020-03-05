@@ -19,12 +19,6 @@ public class AmazonSNSNotificationClient implements NotificationClient {
 
 	private AmazonSNS snsClient;
 
-	@Value("${amazon-aws.bucketName}")
-	private String bucketName;
-
-	@Value("${amazon-aws.bucketRootDir}")
-	private String bucketRootDir;
-
 	@Value("${amazon-aws.accessKey}")
 	private String accessKey;
 
