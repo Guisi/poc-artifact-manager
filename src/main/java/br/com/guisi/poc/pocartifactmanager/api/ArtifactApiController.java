@@ -1,7 +1,6 @@
 package br.com.guisi.poc.pocartifactmanager.api;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -30,11 +29,13 @@ public class ArtifactApiController {
 		return ResponseEntity.ok(response);
 	}
 
-	@PostMapping(value = "/artifact/{artifactType}", consumes = { "application/json" }, produces = { "application/json" })
-	public ResponseEntity<ArtifactResponse> generateArtifact(@Valid @PathVariable("artifactType") String artifactType,
-			@Valid @RequestBody(required = true) Map<String, String> parameters) {
+	@PostMapping(value = "/excel/{sistema}/{tipo}", consumes = { "application/json" }, produces = { "application/json" })
+	public ResponseEntity<ArtifactResponse> generateArtifact(
+			@PathVariable(value = "sistema", required = true) @Valid String sistema,
+    		@PathVariable(value = "tipo", required = true) @Valid String modeloArquivo,
+    		@Valid @RequestBody(required = true) String jsonParametros) {
 
-		ArtifactResponse response = this.artifactService.generateArtifact(artifactType, parameters);
+		ArtifactResponse response = this.artifactService.generateArtifact(sistema, modeloArquivo, jsonParametros);
 		return ResponseEntity.ok(response);
 	}
 
